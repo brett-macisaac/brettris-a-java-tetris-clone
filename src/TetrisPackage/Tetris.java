@@ -16,36 +16,46 @@ package TetrisPackage;
   * Controls:
   
       > The controls can be found in the TetrisFrame class, but below is a readable summary:
-          * Move Left -----------> [left arrow]
-          * Move Right ----------> [right arrow]
-          * Soft Drop -----------> [down arrow]
-          * Hard Drop -----------> [up arrow]
-          * Rotate Clockwise ----> a
-          * Rotate Antilockwise -> d
-          * 
+          * Move Left ---------------> [left arrow]
+          * Move Right --------------> [right arrow]
+          * Soft Drop ---------------> [down arrow]
+          * Hard Drop ---------------> [up arrow]
+          * Rotate Anticlockwise ----> a
+          * Rotate Clockwise --------> d
+          
       > The above controls are for the 'game' mode, but the program also offers a testing mode, the controls of which 
         are as follows:
-          * Move Left -----------> [left arrow]
-          * Move Right ----------> [right arrow]
-          * Move Down -----------> [down arrow]
-          * Move Up -------------> [up arrow]
-          * Clear Grid ----------> c
-          * Remove Full Lines ---> r
-          * Delete Tetromino ----> [delete]
-          * Spawn I piece -------> i
-          * Spawn J piece -------> j
-          * Spawn L piece -------> l
-          * Spawn O piece -------> o
-          * Spawn S piece -------> s
-          * Spawn T piece -------> t
-          * Spawn Z piece -------> z
-          * Spawn random piece --> [space]
+          * Move Left ---------------> [left arrow]
+          * Move Right --------------> [right arrow]
+          * Move Down ---------------> [down arrow]
+          * Move Up -----------------> [up arrow]
+          * Rotate Anticlockwise ----> a
+          * Rotate Clockwise --------> d
+          * Clear Grid --------------> c
+          * Remove Full Lines -------> r
+          * Delete Tetromino --------> [delete]
+          * Spawn I piece -----------> i
+          * Spawn J piece -----------> j
+          * Spawn L piece -----------> l
+          * Spawn O piece -----------> o
+          * Spawn S piece -----------> s
+          * Spawn T piece -----------> t
+          * Spawn Z piece -----------> z
+          * Spawn random piece ------> [space]
         
         
  * Credits: 
      > https://github.com/JohnnyTurbo/LD43/tree/master/Assets/Scripts : C# (UNITY) implementation.
      
  * Author: Brett J Macisaac.
+ 
+ * Coding Conventions:
+     > All variable names are composed of lower-case alphanumerical characters and underscores.
+     > All variable names are prefixed with 'x_':
+         - 'l_': local.
+         - 'f_': field.
+         - 's_': static field.
+         - 'g_': global.
  
 */
 

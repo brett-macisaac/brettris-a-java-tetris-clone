@@ -132,8 +132,8 @@ public class Tetromino
     
     /* Rotation Method
      * This method rotates the tetromino in the given direction.
-     * For more information on how the offset system works, especially as regards the offset system, see 
-       https://tetris.fandom.com/wiki/SRS
+     * The Super Rotation System (SRS) is used. For more information on how this system works, particularly the offsets 
+       element, see https://tetris.fandom.com/wiki/SRS.
     
      * Parameters:
          > a_clockwise: the direction of rotation.

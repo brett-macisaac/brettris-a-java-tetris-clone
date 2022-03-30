@@ -138,7 +138,7 @@ public class TetrisFrame
     /*
      * The period at which the tetromino falls when the 'soft-drop' mode is active.
     */
-    private static final int s_fall_period_soft_drop = s_fall_period_interval;
+    private static final int s_fall_period_soft_drop = s_fall_period_min / 2;
     
     /*
      * The number of lines the player must clear to go up a level.
