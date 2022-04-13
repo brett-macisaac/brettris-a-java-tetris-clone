@@ -22,6 +22,8 @@ package TetrisPackage;
           * Hard Drop ---------------> [up arrow]
           * Rotate Anticlockwise ----> a
           * Rotate Clockwise --------> d
+          * Pause/Resume ------------> p (or the GUI button)
+          * Play/Restart ------------> GUI button
           
       > The above controls are for the 'game' mode, but the program also offers a testing mode, the controls of which 
         are as follows:

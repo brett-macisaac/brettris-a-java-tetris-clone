@@ -225,7 +225,7 @@ public class TetrisGrid
 // (d). Public Methods (9) =============================================================================================
     
     /*
-         * Sets all of the tiles to the colour f_colour_empty_tile.
+     * Sets all of the tiles to the colour f_colour_empty_tile.
     */
     public void Reset()
     {

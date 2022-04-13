@@ -21,43 +21,43 @@ import Utils.RNG;
  * This implementation of Tetris shares many similarities with traditional Tetris games (e.g. NES Tetris), such as 
    controls, scoring, the tetromino colours, and the overall UI layout. The primary difference is the levelling system
    and the tetromino fall-rate; in this version, there's no maximum level, yet the fall-rate still has a predefined min
-   and max value. At first, the period decreases from max to min as the player progresses through the levels; once the 
-   player has completed a level on the max fall-rate (min period), the period decreases to the second lowest value, at 
+   and max value. At first, the period decreases from max to min as the PlayRestarter progresses through the levels; once the 
+   PlayRestarter has completed a level on the max fall-rate (min period), the period decreases to the second lowest value, at 
    which point the fall-rate once again continues to rise to its max value, where it then goes back down to the third
    lowest value. The term 'period-cycle' is used to define the process whereby the fall-period goes from a max value
    down to its minimum value. Eventually there are no more period-cycles and the fall-period remains at its minimum 
    value indefinitely.
 
  * Class Composition:
-     (a). Fields (20)
-         (i). Static Fields (8)
+     (a). Fields (23)
+         (i). Static Fields (9)
      (b). Constructors (1)
      (c). Public Methods (1)
      (d). Auxiliaries (9)
-     (e). Event Handlers (1)
+     (e). Event Handlers (2)
      (f). Nested Classes (1)
          (i). Inner Classes (1)
 
 */
-public class TetrisFrame 
+public class TetrisFrame
     extends JFrame
         implements Runnable
 {
     
-// (a). Fields (20) ====================================================================================================
+// (a). Fields (23) ====================================================================================================
     
     /* The Board
-     * The grid on which the game is played.
+     * The grid on which the game is PlayRestarted.
     */
     private TetrisGrid f_board;
     
     /* The 'Information'
-     * This graphics object displays relevant data to the user.
+     * This graphics object disPlayRestarts relevant data to the user.
     */
     private TetrisInformation f_info;
     
     /* The 'Tallies'
-     * This panel displays the tally for each tetromino: i.e. it records the number of each tetromino type that spawns.
+     * This panel disPlayRestarts the tally for each tetromino: i.e. it records the number of each tetromino type that spawns.
     */
     private TetrominoTallyPanel f_tallies;
     
@@ -66,16 +66,21 @@ public class TetrisFrame
     */
     private Tetromino f_tetromino;
     
-    // The tetromino that's displayed on the TetrisGrid object of f_info.
+    // The tetromino that's disPlayRestarted on the TetrisGrid object of f_info.
     private Tetromino f_next_tetromino;
 
-    /* Stop Button
-     * When pressed, both of the RotatorPanel objects are reset to their default states.
+    /* PlayRestart Button
+     * When pressed, the game commences (assuming the s_testing flag is set to false).
     */
-    private JButton f_btn_play;
+    private JButton f_btn_play_restart;
+    
+    /* PauseResume/Resume Button
+     * This button is used to PauseResume/resume the game.
+    */
+    private JButton f_btn_pause_resume;
     
     /* Game Thread
-     * The thread on which the game is played. 
+     * The thread on which the game is PlayRestarted. 
     */
     private Thread f_game_thread;
     
@@ -107,6 +112,11 @@ public class TetrisFrame
      * The number of 'period-cycles' that have elapsed thus far. 
     */
     private int f_num_period_cycles_elapsed;
+    
+    /*
+     * A flag that, when true, indicates that the game is to be PauseResumed.
+    */
+    private boolean f_is_paused;
     
     
 // (a)(i). Static Fields (8) -------------------------------------------------------------------------------------------
@@ -141,15 +151,15 @@ public class TetrisFrame
     private static final int s_fall_period_soft_drop = s_fall_period_min / 2;
     
     /*
-     * The number of lines the player must clear to go up a level.
-     * Given that a player can clear at most 4 lines in a single tetromino placement, this should be 4 or higher, as 
-       otherwise a player will be able to go up multiple levels in a single move, which may not be desirable.
+     * The number of lines the PlayRestarter must clear to go up a level.
+     * Given that a PlayRestarter can clear at most 4 lines in a single tetromino placement, this should be 4 or higher, as 
+       otherwise a PlayRestarter will be able to go up multiple levels in a single move, which may not be desirable.
     */
     private static final int s_level_length = 4;
     
     /*
-     * This array is used to increase a player's score when they clear n lines, where n ranges from 1 to 4.
-     * A player's score increases by their score increases by f_scores_line_clears[n - 1] * f_level.
+     * This array is used to increase a PlayRestarter's score when they clear n lines, where n ranges from 1 to 4.
+     * A PlayRestarter's score increases by f_scores_line_clears[n - 1] * f_level.
     */
     private static int f_scores_line_clears[] = { 40, 100, 300, 1200 };
     
@@ -158,6 +168,13 @@ public class TetrisFrame
      * The testing mode is useful for checking that the tetromino blocks behave as they should.
     */
     private static boolean s_testing = false;
+    
+    /*
+     * A flag that, when true, allows the user to PauseResume the game using f_btn_pause_resume.
+     * Setting this to false means that PlayRestarters can't 'cheat' by pausing when in a tricky spot.
+     * Being able to PauseResume can be good for training.
+    */
+    private static boolean s_can_PauseResume = true;
     
     private static final long serialVersionUID = 1L;
     
@@ -211,17 +228,34 @@ public class TetrisFrame
         l_constraints.gridx = 2; l_constraints.gridy = 0; // (2,0)
         super.getContentPane().add(f_info, l_constraints);
         
-        // Create and set-up the 'play' button.
-        f_btn_play = new JButton("Play");
-        f_btn_play.setPreferredSize(new Dimension(50, 50));
-        f_btn_play.setFont( new Font( "Arial", Font.BOLD, 24 ) );
-        f_btn_play.addActionListener(e -> Play());
-        f_btn_play.setBackground(Tetris.S_COLOUR_BACKGROUNDS_DEFAULT);
-        f_btn_play.setForeground(Tetris.S_COLOUR_FOREGROUNDS_DEFAULT);
+        // Create and set-up the 'PlayRestart' button.
+        f_btn_play_restart = new JButton("Play");
+        f_btn_play_restart.setPreferredSize(new Dimension(50, 50));
+        f_btn_play_restart.setFont(new Font("Arial", Font.BOLD, 24));
+        f_btn_play_restart.addActionListener(e -> PlayRestart());
+        f_btn_play_restart.setBackground(Tetris.S_COLOUR_BACKGROUNDS_DEFAULT);
+        f_btn_play_restart.setForeground(Tetris.S_COLOUR_FOREGROUNDS_DEFAULT);
+        f_btn_play_restart.setEnabled(!s_testing);
         l_constraints.gridx = 0; l_constraints.gridy = 1; // (0,1)
         l_constraints.gridwidth = 3; // Span 3 columns (i.e. span all three panels).
-        l_constraints.fill = GridBagConstraints.HORIZONTAL; // Span both f_board and f_info.
-        super.getContentPane().add(f_btn_play, l_constraints);
+        l_constraints.fill = GridBagConstraints.HORIZONTAL;
+        super.getContentPane().add(f_btn_play_restart, l_constraints);
+        
+        // Create and set-up the 'PauseResume' button.
+        f_btn_pause_resume = new JButton("Pause");
+        f_btn_pause_resume.setPreferredSize(new Dimension(50, 50));
+        f_btn_pause_resume.setFont(new Font("Arial", Font.BOLD, 24));
+        f_btn_pause_resume.addActionListener(e -> PauseResume());
+        f_btn_pause_resume.setBackground(Tetris.S_COLOUR_BACKGROUNDS_DEFAULT);
+        f_btn_pause_resume.setForeground(Tetris.S_COLOUR_FOREGROUNDS_DEFAULT);
+        f_btn_pause_resume.setEnabled(s_can_PauseResume);
+        l_constraints.gridx = 0; l_constraints.gridy = 2; // (0,1)
+        l_constraints.gridwidth = 3; // Span 3 columns (i.e. span all three panels).
+        l_constraints.fill = GridBagConstraints.HORIZONTAL;
+        super.getContentPane().add(f_btn_pause_resume, l_constraints);
+        
+        // The game shouldn't be PauseResumed to begin with
+        f_is_paused = false;
 
         // Force layout manager to place GUI elements.
         super.pack();
@@ -248,11 +282,23 @@ public class TetrisFrame
             while (f_game_thread != null) // While the thread still runs.
             {
                 // Don't run code if the teromino doesn't exist.
-                if (f_tetromino == null)
-                { continue; }
+                //if (f_tetromino == null)
+                //{ continue; }
                 
                 // Simulate gravity (wait before dropping).
                 Thread.sleep(f_fall_period_current);
+                
+                if (f_is_paused) // If the game is to be Paused.
+                {
+                    // Have f_game_thread wait on 'this'.
+                    synchronized(this)
+                    {
+                        this.wait();
+                    }
+                    
+                    // Ensure that the frame has the focus so that the keyboard controls work.
+                    super.requestFocusInWindow();
+                }
                 
                 // Try to move the piece down the screen; if it can move down, continue.
                 if (Move(Vector2D.s_up))
@@ -323,7 +369,7 @@ public class TetrisFrame
                 // Create and spawn the next tetromino)
                 boolean l_valid_spawn = SpawnNextTetromino();
                 
-                // If the tetromino cannot be spawned, end the game and notify the player that the game is over.
+                // If the tetromino cannot be spawned, end the game and notify the PlayRestarter that the game is over.
                 if (!l_valid_spawn)
                 {
                     if (f_info.GetScore() > f_info.GetHighScore())
@@ -352,7 +398,7 @@ public class TetrisFrame
         {   
             f_game_thread = null;
             
-            f_btn_play.setEnabled(true);
+            f_btn_play_restart.setText("Play Again");
         }
         
     }
@@ -385,7 +431,7 @@ public class TetrisFrame
         return Spawn();
     }
     
-    /* Auxiliary of ...
+    /* Auxiliary of TetrisKeyBoardControls.keyReleased()
      * This method generates a (random) tetromino and spawns it at the top of the grid.
     */
     private boolean GenerateAndSpawn()
@@ -478,6 +524,9 @@ public class TetrisFrame
     {
         // Remove the tetromino's graphics,
         f_board.UnDrawTetromino(f_tetromino);
+        
+        // Delete the tetromino.
+        f_tetromino = null;
     }
     
     /* Auxiliary of SpawnNextTetromino, GenerateAndSpawn, NewTetromino,
@@ -500,32 +549,75 @@ public class TetrisFrame
     
     
     
-// (e). Event Listeners (1) ============================================================================================
+// (e). Event Handlers (2) =============================================================================================
     
-    /* Event Handler of f_btn_play
+    /* Event Handler of f_btn_play_restart
      * This event-handler starts a new game of tetris. 
     */
-    private void Play()
+    private void PlayRestart()
     {
-        f_btn_play.setEnabled(false);
-        
-        if (!s_testing)
+        // If the game is running, this means it must be stopped before starting a new one (i.e. restart the game).
+        if (f_game_thread != null)
         {
-            // Reset relevant fields.
-            f_fall_period_normal = s_fall_period_max;
-            f_fall_period_current = s_fall_period_max;
-            f_num_period_cycles_elapsed = 0;
-            f_is_soft_drop = false;
-            f_board.Reset();
-            f_info.Reset();
-            f_tallies.Reset();
+            f_game_thread.interrupt();
             
-            SpawnNextTetromino();
-            
-            f_game_thread = new Thread(this);
-            f_game_thread.start();
+            if (f_is_paused)
+            {
+                PauseResume();
+            }
         }
         
+        // Reset relevant fields.
+        f_fall_period_normal = s_fall_period_max;
+        f_fall_period_current = s_fall_period_max;
+        f_num_period_cycles_elapsed = 0;
+        f_is_soft_drop = false;
+        f_board.Reset();
+        f_info.Reset();
+        f_tallies.Reset();
+        
+        // Spawn the first tetromino.
+        SpawnNextTetromino();
+        
+        // Create and start the game's thread.
+        f_game_thread = new Thread(this);
+        f_game_thread.start();
+        
+        // Set the button's text to indicate its functionality: i.e. start a new game in the middle of a current one.
+        f_btn_play_restart.setText("Restart");
+        
+        // Ensure that the frame has the focus so that the keyboard controls work.
+        super.requestFocusInWindow();
+    }
+    
+    /* Event Handler of f_btn_pause_resume
+    */
+    private void PauseResume()
+    {   
+        if (f_game_thread == null)
+        { return; }
+        
+        // Toggle the PauseResume flag.
+        f_is_paused = !f_is_paused;
+        
+        // Set the button's text to show the current action it will perform (either PauseResume or resume).
+        if (f_is_paused)
+        {
+            f_btn_pause_resume.setText("Resume");
+        }
+        else
+        {
+            f_btn_pause_resume.setText("Pause");
+            
+            // Awaken f_game_thread.
+            synchronized (this) 
+            {
+                this.notifyAll();
+            }
+        }
+        
+        // Ensure that the frame has the focus so that the keyboard controls work.
+        super.requestFocusInWindow();
     }
     
     
@@ -545,7 +637,7 @@ public class TetrisFrame
         extends KeyAdapter
     {   
         
-    // (a'). Public Methods (1) =========================================================================================
+    // (a'). Public Methods (1) ========================================================================================
         
         /* Implementation of KeyAdapter.keyReleased(...)
          * 
@@ -553,11 +645,22 @@ public class TetrisFrame
         @Override
         public void keyReleased(KeyEvent e)
         {  
+            // If not in the testing mode and the tetromino doesn't exist, return.
             if (!s_testing && f_tetromino == null)
             { return; }
             
             int l_key_code = e.getKeyCode();
             
+            // If not in the testing mode and the game is Paused, only enable the Pause/Resume key: 'p'.
+            if (!s_testing && f_is_paused)
+            { 
+                if (l_key_code == KeyEvent.VK_P)
+                { PauseResume(); }
+                
+                return;
+            }
+            
+            // Commands that are handled irrespective of the value of s_testing.
             if (l_key_code == KeyEvent.VK_LEFT)
             {
                 Move(Vector2D.s_left);
@@ -598,7 +701,18 @@ public class TetrisFrame
             {
                 Rotate(false);
             }
-            else if (s_testing)
+            
+            // Commands that are specific to when s_testing is not set.
+            if (!s_testing)
+            {
+                if (l_key_code == KeyEvent.VK_P)
+                {
+                    PauseResume();
+                }
+            }
+            
+            // Commands that are specific to when s_testing is set.
+            if (s_testing)
             {
                 if (l_key_code == KeyEvent.VK_SPACE)
                 {
